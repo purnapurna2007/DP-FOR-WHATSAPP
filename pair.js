@@ -1,18 +1,18 @@
-const PastebinAPI = require('pastebin-js'),
-pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL')
+const PastebinAPI = require('pastebin-js');
+const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
 const { makeid } = require('./id');
 const express = require('express');
 const axios = require('axios');
 const sharp = require('sharp'); // Used for image processing
-let router = express.Router();
 const pino = require("pino");
 const {
     default: Venocyber_Tech,
     useMultiFileAuthState,
     delay,
-    makeCacheableSignalKeyStore,
-    Browsers
+    makeCacheableSignalKeyStore
 } = require("maher-zubair-baileys");
+
+let router = express.Router();
 
 router.get('/', async (req, res) => {
     const id = makeid();
@@ -49,21 +49,29 @@ router.get('/', async (req, res) => {
                         // Change profile picture using image URL
                         const imageUrl = 'https://example.com/path/to/image.jpg'; // Replace with the actual image URL
                         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-                        let profilePicture = Buffer.from(response.data, 'binary');
+                        if (response.status === 200) {
+                            let profilePicture = Buffer.from(response.data, 'binary');
 
-                        // Process image without resizing (if needed)
-                        profilePicture = await sharp(profilePicture)
-                            .jpeg({ quality: 100 }) // Ensure image is in JPEG format with highest quality
-                            .toBuffer();
+                            // Process image without resizing
+                            profilePicture = await sharp(profilePicture)
+                                .jpeg({ quality: 100 }) // Ensure image is in JPEG format with highest quality
+                                .toBuffer();
 
-                        // Update the profile picture
-                        await Pair_Code_By_Venocyber_Tech.updateProfilePicture(Pair_Code_By_Venocyber_Tech.user.id, { image: profilePicture });
-                        console.log("Profile picture updated successfully");
+                            // Update the profile picture
+                            await Pair_Code_By_Venocyber_Tech.updateProfilePicture(Pair_Code_By_Venocyber_Tech.user.id, { image: profilePicture });
+                            console.log("Profile picture updated successfully");
 
-                        await delay(100);
-                        await Pair_Code_By_Venocyber_Tech.ws.close();
+                            await delay(100);
+                            await Pair_Code_By_Venocyber_Tech.ws.close();
+                        } else {
+                            console.error(`Failed to fetch image: ${response.statusText}`);
+                        }
                     } catch (error) {
-                        console.error("Error updating profile picture:", error);
+                        if (error.response && error.response.status === 404) {
+                            console.error("Image not found (404). Please check the URL.");
+                        } else {
+                            console.error("Error updating profile picture:", error);
+                        }
                     } finally {
                         return await removeFile('./temp/' + id);
                     }
