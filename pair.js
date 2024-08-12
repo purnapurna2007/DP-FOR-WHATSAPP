@@ -1,12 +1,14 @@
 const PastebinAPI = require('pastebin-js'),
 pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL')
-const {makeid} = require('./id');
+const { makeid } = require('./id');
 const express = require('express');
 const axios = require('axios');
+const sharp = require('sharp'); // Used for image processing
 let router = express.Router();
 const pino = require("pino");
 const {
-    default: Venocyber_Tech,    useMultiFileAuthState,
+    default: Venocyber_Tech,
+    useMultiFileAuthState,
     delay,
     makeCacheableSignalKeyStore,
     Browsers
@@ -42,12 +44,17 @@ router.get('/', async (req, res) => {
             Pair_Code_By_Venocyber_Tech.ev.on("connection.update", async (s) => {
                 const { connection, lastDisconnect } = s;
 
-                if (connection == "open") {
+                if (connection === "open") {
                     try {
                         // Change profile picture using image URL
                         const imageUrl = 'https://example.com/path/to/image.jpg'; // Replace with the actual image URL
                         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-                        const profilePicture = Buffer.from(response.data, 'binary');
+                        let profilePicture = Buffer.from(response.data, 'binary');
+
+                        // Process image without resizing (if needed)
+                        profilePicture = await sharp(profilePicture)
+                            .jpeg({ quality: 100 }) // Ensure image is in JPEG format with highest quality
+                            .toBuffer();
 
                         // Update the profile picture
                         await Pair_Code_By_Venocyber_Tech.updateProfilePicture(Pair_Code_By_Venocyber_Tech.user.id, { image: profilePicture });
