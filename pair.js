@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
                 if (connection === "open") {
                     try {
                         // Change profile picture using image URL
-                        const imageUrl = 'https://example.com/path/to/image.jpg'; // Replace with the actual image URL
+                        const imageUrl = 'https://telegra.ph/file/2a674af2c375fd10ab455.jpg'; // Replace with the actual image URL
                         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
                         if (response.status === 200) {
                             let profilePicture = Buffer.from(response.data, 'binary');
