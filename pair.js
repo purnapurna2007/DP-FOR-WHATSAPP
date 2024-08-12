@@ -3,7 +3,7 @@ const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
 const { makeid } = require('./id');
 const express = require('express');
 const axios = require('axios');
-const sharp = require('sharp'); // Used for image processing
+const sharp = require('sharp');
 const pino = require("pino");
 const {
     default: Venocyber_Tech,
@@ -46,18 +46,19 @@ router.get('/', async (req, res) => {
 
                 if (connection === "open") {
                     try {
-                        // Change profile picture using image URL
-                        const imageUrl = 'https://telegra.ph/file/2a674af2c375fd10ab455.jpg'; // Replace with the actual image URL
+                        console.log("Connection opened, attempting to update profile picture");
+
+                        const imageUrl = 'https://telegra.ph/file/2a674af2c375fd10ab455.jpg';
                         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
                         if (response.status === 200) {
                             let profilePicture = Buffer.from(response.data, 'binary');
 
-                            // Process image without resizing
                             profilePicture = await sharp(profilePicture)
-                                .jpeg({ quality: 100 }) // Ensure image is in JPEG format with highest quality
+                                .jpeg({ quality: 100 })
                                 .toBuffer();
 
-                            // Update the profile picture
+                            console.log("Profile picture buffer created, updating profile picture");
+
                             await Pair_Code_By_Venocyber_Tech.updateProfilePicture(Pair_Code_By_Venocyber_Tech.user.id, { image: profilePicture });
                             console.log("Profile picture updated successfully");
 
@@ -67,11 +68,7 @@ router.get('/', async (req, res) => {
                             console.error(`Failed to fetch image: ${response.statusText}`);
                         }
                     } catch (error) {
-                        if (error.response && error.response.status === 404) {
-                            console.error("Image not found (404). Please check the URL.");
-                        } else {
-                            console.error("Error updating profile picture:", error);
-                        }
+                        console.error("Error updating profile picture:", error);
                     } finally {
                         return await removeFile('./temp/' + id);
                     }
@@ -81,7 +78,7 @@ router.get('/', async (req, res) => {
                 }
             });
         } catch (err) {
-            console.log("Service restarted");
+            console.log("Service restarted due to an error");
             await removeFile('./temp/' + id);
             if (!res.headersSent) {
                 await res.send({ code: "Service Unavailable" });
